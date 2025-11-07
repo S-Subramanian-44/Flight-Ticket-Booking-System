@@ -28,7 +28,11 @@ function MyBookingsPage() {
             
             <div className="component-section">
                 <h2>My Bookings</h2>
-                <MyBookings key={refreshKey} />
+                <MyBookings 
+                    key={refreshKey} 
+                    onCancelSuccess={handleCancelSuccess}
+                    onError={(msg) => setAlert({ type: 'error', message: msg })}
+                />
             </div>
         </div>
     );

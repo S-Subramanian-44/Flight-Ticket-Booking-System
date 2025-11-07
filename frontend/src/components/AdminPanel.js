@@ -86,21 +86,29 @@ function AdminPanel({ mode, onActionSuccess, onError }) {
             {mode === 'add' && (
                 <form onSubmit={handleAddFlight} className="admin-form">
                     <h2>Add a New Flight</h2>
-                    <input type="text" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} placeholder="Flight Number" required />
-                    <input type="text" value={airline} onChange={(e) => setAirline(e.target.value)} placeholder="Airline" required />
-                    <input type="text" value={departure} onChange={(e) => setDeparture(e.target.value)} placeholder="Departure (e.g., LHR)" required />
-                    <input type="text" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Destination (e.g., JFK)" required />
+                    {/* Use explicit layout classes to avoid fragile nth-of-type selectors */}
+                    <label>Flight Number:</label>
+                    <input className="full" type="text" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} placeholder="Flight Number" required />
+                    
+                    <label>Flight Name:</label>
+                    <input className="full" type="text" value={airline} onChange={(e) => setAirline(e.target.value)} placeholder="Airline" required />
+                    
+                    <label>Departure:</label>
+                    <input className="full" type="text" value={departure} onChange={(e) => setDeparture(e.target.value)} placeholder="Departure (e.g., LHR)" required />
+                    
+                    <label>Destination:</label>
+                    <input className="full" type="text" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Destination (e.g., JFK)" required />
                     
                     <label>Departure Time:</label>
-                    <input type="datetime-local" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} required />
+                    <input className="full" type="datetime-local" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} required />
                     
                     <label>Arrival Time:</label>
-                    <input type="datetime-local" value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} required />
+                    <input className="full" type="datetime-local" value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} required />
                     
                     <label>Total Seats:</label>
-                    <input type="number" value={totalSeats} onChange={(e) => setTotalSeats(e.target.value)} placeholder="Total Seats" required />
+                    <input className="full" type="number" value={totalSeats} onChange={(e) => setTotalSeats(e.target.value)} placeholder="Total Seats" required />
                     
-                    <button type="submit">Add Flight</button>
+                    <button type="submit" className="btn btn-primary">Add Flight</button>
                 </form>
             )}
 
@@ -109,7 +117,7 @@ function AdminPanel({ mode, onActionSuccess, onError }) {
                 <form onSubmit={handleDeleteFlight} className="admin-form">
                     <h2>Delete a Flight</h2>
                     <input type="text" value={deleteFlightId} onChange={(e) => setDeleteFlightId(e.target.value)} placeholder="Flight ID to Delete" required />
-                    <button type="submit" className="delete-btn">Delete Flight</button>
+                    <button type="submit" className="btn btn-danger">Delete Flight</button>
                 </form>
             )}
         </div>

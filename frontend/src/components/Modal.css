@@ -1,0 +1,15 @@
+.modal-backdrop{
+    position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+    background-color: rgba(6,12,20,0.45); z-index:1000; animation: fadeIn .18s ease-out;
+}
+.modal-content{ background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--elevation-2); width:100%; max-width:560px; animation: slideIn .22s ease-out; overflow:hidden; }
+.modal-header{ display:flex; justify-content:space-between; align-items:center; padding:var(--space-md) var(--space-lg); border-bottom:1px solid var(--border); }
+.modal-title{ margin:0; font-size:1.125rem; color:var(--text); }
+.modal-close-btn{ background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--muted); }
+.modal-body{ padding:var(--space-lg); font-size:1rem; color:rgba(15,23,42,0.8); }
+.modal-footer{ display:flex; justify-content:flex-end; gap:12px; padding:var(--space-sm) var(--space-lg); border-top:1px solid var(--border); background:transparent; }
+
+/* Reuse .btn, .btn-secondary and .btn-danger from global styles; ensure local hover states are subtle */
+
+@keyframes fadeIn{ from{ opacity:0 } to{ opacity:1 } }
+@keyframes slideIn{ from{ transform:translateY(-18px); opacity:0 } to{ transform:none; opacity:1 } }

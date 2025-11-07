@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext'; // <-- Import useAuth
+import ConfirmModal from './ConfirmModal';
 
 function CancelBooking({ onCancelSuccess, onError }) {
     const [bookingId, setBookingId] = useState('');
@@ -18,13 +19,17 @@ function CancelBooking({ onCancelSuccess, onError }) {
             onError('You must be logged in to cancel.');
             return;
         }
+        // show confirm modal
+        setPendingId(bookingId);
+        setShowConfirm(true);
+    };
 
+    const doCancel = async (id) => {
+        setShowConfirm(false);
         setLoading(true);
         try {
-            const response = await axios.delete(`/bookings/${bookingId}`, {
-                headers: { // <-- Send token in headers
-                    'Authorization': `Bearer ${token}`
-                }
+            const response = await axios.delete(`/bookings/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             console.log('Cancel response:', response.data);
             onCancelSuccess();
@@ -55,20 +60,36 @@ function CancelBooking({ onCancelSuccess, onError }) {
         }
     };
 
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [pendingId, setPendingId] = useState(null);
+
     return (
-        <form onSubmit={handleSubmit}>
-            {/* ... (form input is unchanged) ... */}
+        <>
+        <form onSubmit={handleSubmit} className="cancel-booking-form">
             <input
                 type="text"
+                className="form-control"
                 value={bookingId}
                 onChange={(e) => setBookingId(e.target.value)}
                 placeholder="Booking ID"
                 required
             />
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading} className="btn btn-danger cancel-booking-btn">
                 {loading ? 'Canceling...' : 'Cancel Booking'}
             </button>
         </form>
+        <ConfirmModal
+            open={showConfirm}
+            title={`Cancel Booking ${pendingId}`}
+            onCancel={() => setShowConfirm(false)}
+            onConfirm={() => doCancel(pendingId)}
+            confirmText="Cancel"
+            cancelText="Keep"
+            danger={true}
+        >
+            <p>Are you sure you want to cancel booking <strong>{pendingId}</strong>? This action cannot be undone.</p>
+        </ConfirmModal>
+        </>
     );
 }
 

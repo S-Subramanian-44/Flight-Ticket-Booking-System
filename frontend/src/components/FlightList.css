@@ -1,0 +1,39 @@
+.flight-list{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+    gap: var(--space-lg);
+}
+
+.flight-card{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--elevation-1);
+    transition: transform .15s ease, box-shadow .15s ease;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+}
+
+.flight-card:hover{ transform: translateY(-4px); box-shadow: var(--elevation-2); }
+
+.card-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding: calc(var(--space-sm) + 8px) var(--space-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.card-header h3{ margin:0; font-size:1.05rem; color:var(--text); }
+.flight-number{ font-weight:500; color:var(--muted); }
+.seats-available{ font-size:.9rem; font-weight:700; color:var(--success); }
+.seats-full{ font-size:.9rem; font-weight:700; color:var(--danger); }
+.card-body{ padding: var(--space-md); flex-grow:1; }
+.route{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.route-code{ font-size:1.25rem; font-weight:700; color:var(--primary); }
+.route-arrow{ font-size:1.25rem; color:var(--muted); margin:0 12px; }
+.time p{ margin:4px 0; font-size:.95rem; color:rgba(15,23,42,0.75); }
+.flight-id-label{ font-size:.85rem; color:#9AA6B2; margin-top:12px; margin-bottom:0; }
+.card-footer{ padding:12px 16px; background:transparent; border-top:1px solid var(--border); display:flex; gap:10px; }
+.card-footer .btn{ flex:1; }
