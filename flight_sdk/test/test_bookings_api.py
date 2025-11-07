@@ -40,6 +40,13 @@ class TestBookingsApi(unittest.TestCase):
         """
         pass
 
+    def test_get_my_bookings_bookings_me_get(self) -> None:
+        """Test case for get_my_bookings_bookings_me_get
+
+        Get My Bookings
+        """
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

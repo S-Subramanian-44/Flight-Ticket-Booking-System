@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **id** | **int** |  | 
 **flight_id** | **int** |  | 
 **status** | **str** |  | 
+**user_id** | **int** |  | 
 **flight** | [**FlightResponse**](FlightResponse.md) |  | 
 
 ## Example

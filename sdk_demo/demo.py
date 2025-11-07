@@ -1,79 +1,90 @@
-# Corrected imports: 'flight_sdk' is changed to 'openapi_client'
 import openapi_client
+from openapi_client.api.users_api import UsersApi
 from openapi_client.api.flights_api import FlightsApi
 from openapi_client.api.bookings_api import BookingsApi
+from openapi_client.models.user_create import UserCreate
 from openapi_client.models.flight_create import FlightCreate
 from openapi_client.models.booking_create import BookingCreate
-from openapi_client.api_client import ApiClient, ApiException
-from datetime import datetime
+from openapi_client.api_client import ApiClient
+from openapi_client.exceptions import ApiException 
+from datetime import datetime, timedelta, UTC
+import httpx 
+import time
 
-# Configure the API client to point to our running backend
+# --- Script Configuration ---
+BASE_URL = "http://localhost:8000"
+ADMIN_EMAIL = f"admin_sdk_{int(time.time())}@example.com"
+ADMIN_PASSWORD = "sdk_admin_password_123"
+ADMIN_SECRET = "super-secret-admin-key" # Must match your auth.py
+
+# 1. Configure the base API client
 configuration = openapi_client.Configuration(
-    host="http://localhost:8000"
+    host=BASE_URL
 )
 
-# --- Main Demo Logic ---
-print("🚀 Starting Flight Booking SDK Demo...")
+print("🚀 Starting Admin SDK Demo...")
 
-with ApiClient(configuration) as api_client:
-    # Create API instances
-    flights_api = FlightsApi(api_client)
-    bookings_api = BookingsApi(api_client)
+try:
+    # 2. Register a new Admin User
+    # We use a context manager to get a temporary client
+    with ApiClient(configuration) as api_client:
+        users_api = UsersApi(api_client)
+        admin_user_data = UserCreate(
+            email=ADMIN_EMAIL,
+            password=ADMIN_PASSWORD,
+            admin_secret=ADMIN_SECRET
+        )
+        try:
+            new_admin = users_api.register_user_users_register_post(user_create=admin_user_data)
+            print(f"\n✅ 1. Admin user '{new_admin.email}' registered successfully.")
+        except ApiException as e:
+            print(f"❌ Could not register admin (maybe email already exists?): {e.body}")
+            raise
 
-    try:
-        # 1. Add a new flight
-        print("\n1. Adding new flight 'SD100'...")
-        new_flight = FlightCreate(
-            flight_number="SD100",
-            airline="SDK Demo Air",
-            departure="DEV",
-            destination="OPS",
-            departure_time=datetime.now(),
+    # 3. Log in as Admin to get Token
+    # The SDK generator is bad at OAuth2 form data, so we use httpx.
+    print(f"\n✅ 2. Logging in as '{ADMIN_EMAIL}'...")
+    login_data = {
+        'username': ADMIN_EMAIL, # 'username' is the email
+        'password': ADMIN_PASSWORD
+    }
+    response = httpx.post(f"{BASE_URL}/users/login", data=login_data)
+    
+    if response.status_code != 200:
+        print(f"❌ Login failed: {response.json()}")
+        raise Exception("Login failed")
+        
+    token_data = response.json()
+    access_token = token_data['access_token']
+    print("   ...Login successful. Token received.")
+
+    # 4. Configure the main SDK client with the Auth Token
+    configuration.access_token = access_token
+
+    # 5. Run authenticated admin operations
+    with ApiClient(configuration) as admin_client:
+        flights_api = FlightsApi(admin_client)
+        
+        # --- Add a Flight (Admin Only) ---
+        print("\n✅ 3. (Admin) Adding a new flight...")
+        new_flight_data = FlightCreate(
+            flight_number="SDK999",
+            airline="SDK Air",
+            departure="SDK",
+            destination="API",
+            departure_time=datetime.now(UTC) + timedelta(days=1),
             total_seats=50
         )
-        added_flight = flights_api.add_flight_flights_post(flight_create=new_flight)
-        print(f"✅ Success! Added Flight ID: {added_flight.id}, Seats: {added_flight.available_seats}")
+        added_flight = flights_api.add_flight_flights_post(flight_create=new_flight_data)
         flight_id = added_flight.id
+        print(f"   ...Flight {added_flight.flight_number} (ID: {flight_id}) added.")
 
-        # 2. List all flights
-        print("\n2. Listing all flights...")
-        all_flights = flights_api.list_flights_flights_get()
-        print(f"✅ Success! Found {len(all_flights)} flights.")
-        for f in all_flights:
-            print(f"   - [ID: {f.id}] {f.flight_number} ({f.airline}) - {f.available_seats} seats left")
-        
-        # 3. Book a ticket
-        print(f"\n3. Booking a ticket on flight {flight_id}...")
-        booking_details = BookingCreate(
-            passenger_name="SDK User",
-            passport_number="SDK12345"
-        )
-        new_booking = bookings_api.book_ticket_flights_flight_id_book_post(
-            flight_id=flight_id,
-            booking_create=booking_details
-        )
-        booking_id = new_booking.id
-        print(f"✅ Success! Booking confirmed. Booking ID: {booking_id}")
-        
-        # 4. Check available seats (should be 49)
-        flight_details = flights_api.get_flight_details_flights_flight_id_get(flight_id=flight_id)
-        print(f"   -> Seats remaining on flight {flight_id}: {flight_details.available_seats}")
-        assert flight_details.available_seats == 49
+        # --- Delete a Flight (Admin Only) ---
+        print(f"\n✅ 4. (Admin) Deleting flight {flight_id}...")
+        flights_api.delete_flight_flights_flight_id_delete(flight_id=flight_id)
+        print("   ...Flight deleted successfully.")
 
-        # 5. Cancel the booking
-        print(f"\n4. Canceling booking {booking_id}...")
-        canceled_booking = bookings_api.cancel_booking_bookings_booking_id_delete(booking_id=booking_id)
-        print(f"✅ Success! Booking status: {canceled_booking.status}")
+    print("\n🎉 Admin SDK Demo Completed Successfully!")
 
-        # 6. Check available seats again (should be 50)
-        flight_details = flights_api.get_flight_details_flights_flight_id_get(flight_id=flight_id)
-        print(f"   -> Seats remaining on flight {flight_id}: {flight_details.available_seats}")
-        assert flight_details.available_seats == 50
-        
-        print("\n🎉 SDK Demo Completed Successfully!")
-
-    except ApiException as e:
-        print(f"\n❌ ERROR in SDK Demo: {e.status} {e.reason}")
-        print(f"   Body: {e.body}")
-    except Exception as e:
-        print(f"\n❌ An unexpected error occurred: {e}")
+except Exception as e:
+    print(f"\n❌ ERROR in SDK Demo: {e}")

@@ -32,8 +32,9 @@ class BookingResponse(BaseModel):
     id: StrictInt
     flight_id: StrictInt
     status: StrictStr
+    user_id: StrictInt
     flight: FlightResponse
-    __properties: ClassVar[List[str]] = ["passenger_name", "passport_number", "id", "flight_id", "status", "flight"]
+    __properties: ClassVar[List[str]] = ["passenger_name", "passport_number", "id", "flight_id", "status", "user_id", "flight"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -94,6 +95,7 @@ class BookingResponse(BaseModel):
             "id": obj.get("id"),
             "flight_id": obj.get("flight_id"),
             "status": obj.get("status"),
+            "user_id": obj.get("user_id"),
             "flight": FlightResponse.from_dict(obj["flight"]) if obj.get("flight") is not None else None
         })
         return _obj

@@ -18,6 +18,9 @@ from openapi_client.models.booking_response import BookingResponse
 from openapi_client.models.flight_create import FlightCreate
 from openapi_client.models.flight_response import FlightResponse
 from openapi_client.models.http_validation_error import HTTPValidationError
+from openapi_client.models.token import Token
+from openapi_client.models.user_create import UserCreate
+from openapi_client.models.user_response import UserResponse
 from openapi_client.models.validation_error import ValidationError
 from openapi_client.models.validation_error_loc_inner import ValidationErrorLocInner
 

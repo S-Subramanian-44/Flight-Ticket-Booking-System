@@ -6,6 +6,7 @@ Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**book_ticket_flights_flight_id_book_post**](BookingsApi.md#book_ticket_flights_flight_id_book_post) | **POST** /flights/{flight_id}/book | Book Ticket
 [**cancel_booking_bookings_booking_id_delete**](BookingsApi.md#cancel_booking_bookings_booking_id_delete) | **DELETE** /bookings/{booking_id} | Cancel Booking
+[**get_my_bookings_bookings_me_get**](BookingsApi.md#get_my_bookings_bookings_me_get) | **GET** /bookings/me | Get My Bookings
 
 
 # **book_ticket_flights_flight_id_book_post**
@@ -13,10 +14,9 @@ Method | HTTP request | Description
 
 Book Ticket
 
-Book a ticket for a specific flight.
-
 ### Example
 
+* OAuth Authentication (OAuth2PasswordBearer):
 
 ```python
 import openapi_client
@@ -31,6 +31,12 @@ configuration = openapi_client.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+configuration.access_token = os.environ["ACCESS_TOKEN"]
 
 # Enter a context with an instance of the API client
 with openapi_client.ApiClient(configuration) as api_client:
@@ -64,7 +70,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[OAuth2PasswordBearer](../README.md#OAuth2PasswordBearer)
 
 ### HTTP request headers
 
@@ -85,11 +91,13 @@ No authorization required
 
 Cancel Booking
 
-Cancel an existing booking by its ID.
-This changes the status to "Canceled" and increments the flight's available seats.
+Cancel an existing booking.
+A user can cancel their own booking.
+An admin can cancel *any* booking.
 
 ### Example
 
+* OAuth Authentication (OAuth2PasswordBearer):
 
 ```python
 import openapi_client
@@ -103,6 +111,12 @@ configuration = openapi_client.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+configuration.access_token = os.environ["ACCESS_TOKEN"]
 
 # Enter a context with an instance of the API client
 with openapi_client.ApiClient(configuration) as api_client:
@@ -134,7 +148,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[OAuth2PasswordBearer](../README.md#OAuth2PasswordBearer)
 
 ### HTTP request headers
 
@@ -147,6 +161,75 @@ No authorization required
 |-------------|-------------|------------------|
 **200** | Successful Response |  -  |
 **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_my_bookings_bookings_me_get**
+> List[BookingResponse] get_my_bookings_bookings_me_get()
+
+Get My Bookings
+
+### Example
+
+* OAuth Authentication (OAuth2PasswordBearer):
+
+```python
+import openapi_client
+from openapi_client.models.booking_response import BookingResponse
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = openapi_client.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+configuration.access_token = os.environ["ACCESS_TOKEN"]
+
+# Enter a context with an instance of the API client
+with openapi_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = openapi_client.BookingsApi(api_client)
+
+    try:
+        # Get My Bookings
+        api_response = api_instance.get_my_bookings_bookings_me_get()
+        print("The response of BookingsApi->get_my_bookings_bookings_me_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling BookingsApi->get_my_bookings_bookings_me_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**List[BookingResponse]**](BookingResponse.md)
+
+### Authorization
+
+[OAuth2PasswordBearer](../README.md#OAuth2PasswordBearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

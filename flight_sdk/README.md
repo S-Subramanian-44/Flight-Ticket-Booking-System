@@ -61,6 +61,12 @@ configuration = openapi_client.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+configuration.access_token = os.environ["ACCESS_TOKEN"]
 
 
 # Enter a context with an instance of the API client
@@ -88,9 +94,14 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *BookingsApi* | [**book_ticket_flights_flight_id_book_post**](docs/BookingsApi.md#book_ticket_flights_flight_id_book_post) | **POST** /flights/{flight_id}/book | Book Ticket
 *BookingsApi* | [**cancel_booking_bookings_booking_id_delete**](docs/BookingsApi.md#cancel_booking_bookings_booking_id_delete) | **DELETE** /bookings/{booking_id} | Cancel Booking
+*BookingsApi* | [**get_my_bookings_bookings_me_get**](docs/BookingsApi.md#get_my_bookings_bookings_me_get) | **GET** /bookings/me | Get My Bookings
 *FlightsApi* | [**add_flight_flights_post**](docs/FlightsApi.md#add_flight_flights_post) | **POST** /flights/ | Add Flight
+*FlightsApi* | [**delete_flight_flights_flight_id_delete**](docs/FlightsApi.md#delete_flight_flights_flight_id_delete) | **DELETE** /flights/{flight_id} | Delete Flight
 *FlightsApi* | [**get_flight_details_flights_flight_id_get**](docs/FlightsApi.md#get_flight_details_flights_flight_id_get) | **GET** /flights/{flight_id} | Get Flight Details
 *FlightsApi* | [**list_flights_flights_get**](docs/FlightsApi.md#list_flights_flights_get) | **GET** /flights/ | List Flights
+*UsersApi* | [**login_for_access_token_users_login_post**](docs/UsersApi.md#login_for_access_token_users_login_post) | **POST** /users/login | Login For Access Token
+*UsersApi* | [**read_users_me_users_me_get**](docs/UsersApi.md#read_users_me_users_me_get) | **GET** /users/me | Read Users Me
+*UsersApi* | [**register_user_users_register_post**](docs/UsersApi.md#register_user_users_register_post) | **POST** /users/register | Register User
 
 
 ## Documentation For Models
@@ -100,6 +111,9 @@ Class | Method | HTTP request | Description
  - [FlightCreate](docs/FlightCreate.md)
  - [FlightResponse](docs/FlightResponse.md)
  - [HTTPValidationError](docs/HTTPValidationError.md)
+ - [Token](docs/Token.md)
+ - [UserCreate](docs/UserCreate.md)
+ - [UserResponse](docs/UserResponse.md)
  - [ValidationError](docs/ValidationError.md)
  - [ValidationErrorLocInner](docs/ValidationErrorLocInner.md)
 
@@ -107,7 +121,15 @@ Class | Method | HTTP request | Description
 <a id="documentation-for-authorization"></a>
 ## Documentation For Authorization
 
-Endpoints do not require authorization.
+
+Authentication schemes defined for the API:
+<a id="OAuth2PasswordBearer"></a>
+### OAuth2PasswordBearer
+
+- **Type**: OAuth
+- **Flow**: password
+- **Authorization URL**: 
+- **Scopes**: N/A
 
 
 ## Author

@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**add_flight_flights_post**](FlightsApi.md#add_flight_flights_post) | **POST** /flights/ | Add Flight
+[**delete_flight_flights_flight_id_delete**](FlightsApi.md#delete_flight_flights_flight_id_delete) | **DELETE** /flights/{flight_id} | Delete Flight
 [**get_flight_details_flights_flight_id_get**](FlightsApi.md#get_flight_details_flights_flight_id_get) | **GET** /flights/{flight_id} | Get Flight Details
 [**list_flights_flights_get**](FlightsApi.md#list_flights_flights_get) | **GET** /flights/ | List Flights
 
@@ -14,11 +15,11 @@ Method | HTTP request | Description
 
 Add Flight
 
-Add a new flight to the system.
-Available seats are automatically set to total_seats.
+Add a new flight to the system. **Admin only.**
 
 ### Example
 
+* OAuth Authentication (OAuth2PasswordBearer):
 
 ```python
 import openapi_client
@@ -33,6 +34,12 @@ configuration = openapi_client.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+configuration.access_token = os.environ["ACCESS_TOKEN"]
 
 # Enter a context with an instance of the API client
 with openapi_client.ApiClient(configuration) as api_client:
@@ -64,7 +71,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[OAuth2PasswordBearer](../README.md#OAuth2PasswordBearer)
 
 ### HTTP request headers
 
@@ -80,12 +87,85 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **delete_flight_flights_flight_id_delete**
+> delete_flight_flights_flight_id_delete(flight_id)
+
+Delete Flight
+
+Delete a flight from the system. **Admin only.**
+This will also automatically delete all existing bookings for this flight
+due to the cascade rule.
+
+### Example
+
+* OAuth Authentication (OAuth2PasswordBearer):
+
+```python
+import openapi_client
+from openapi_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = openapi_client.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+configuration.access_token = os.environ["ACCESS_TOKEN"]
+
+# Enter a context with an instance of the API client
+with openapi_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = openapi_client.FlightsApi(api_client)
+    flight_id = 56 # int | 
+
+    try:
+        # Delete Flight
+        api_instance.delete_flight_flights_flight_id_delete(flight_id)
+    except Exception as e:
+        print("Exception when calling FlightsApi->delete_flight_flights_flight_id_delete: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **flight_id** | **int**|  | 
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+[OAuth2PasswordBearer](../README.md#OAuth2PasswordBearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **get_flight_details_flights_flight_id_get**
 > FlightResponse get_flight_details_flights_flight_id_get(flight_id)
 
 Get Flight Details
-
-Retrieve details for a specific flight by its ID.
 
 ### Example
 
@@ -153,8 +233,6 @@ No authorization required
 > List[FlightResponse] list_flights_flights_get(skip=skip, limit=limit)
 
 List Flights
-
-Retrieve a list of all available flights.
 
 ### Example
 

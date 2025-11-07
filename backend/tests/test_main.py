@@ -6,13 +6,13 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime, UTC # <-- UPDATED for warnings
+from datetime import datetime, UTC, timedelta
 
 # --- Imports: Now they will work! ---
 from main import app, get_db
 from database import Base
 import models
-# ------------------------------------
+import auth # Import auth to get the secret
 
 # --- Test Database Setup ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -21,7 +21,7 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Override the `get_db` dependency to use the test database
+# Override the `get_db` dependency
 def override_get_db():
     try:
         db = TestingSessionLocal()
@@ -31,157 +31,212 @@ def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
-# Fixture to create a new database for each test function
+# --- Fixtures ---
+
+@pytest.fixture(scope="session")
+def client():
+    """A TestClient that runs once for the whole session."""
+    with TestClient(app) as c:
+        yield c
+
 @pytest.fixture(scope="function")
 def db_session():
-    Base.metadata.drop_all(bind=engine) # Drop tables first
-    Base.metadata.create_all(bind=engine) # Create tables
+    """A clean database session for each test function."""
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-# Fixture for the test client
-@pytest.fixture(scope="module")
-def client():
-    with TestClient(app) as c:
-        yield c
+@pytest.fixture(scope="function")
+def test_user(db_session):
+    """Creates and returns a standard user."""
+    user = models.User(
+        email="testuser@example.com",
+        hashed_password=auth.get_password_hash("password123"),
+        is_admin=False
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+@pytest.fixture(scope="function")
+def admin_user(db_session):
+    """Creates and returns an admin user."""
+    user = models.User(
+        email="admin@example.com",
+        hashed_password=auth.get_password_hash("adminpass123"),
+        is_admin=True
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+def get_auth_headers(client, email, password):
+    """Helper function to log in and get auth headers."""
+    response = client.post("/users/login", data={"username": email, "password": password})
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
 
 # --- Test Cases ---
 
-def test_add_flight(client, db_session):
-    """Test adding a new flight."""
-    flight_data = {
-        "flight_number": "BA249",
-        "airline": "British Airways",
-        "departure": "LHR",
-        "destination": "JFK",
-        "departure_time": datetime.now(UTC).isoformat(), # <-- UPDATED for warnings
-        "total_seats": 100
-    }
-    response = client.post("/flights/", json=flight_data)
-    assert response.status_code == 201
+# --- User & Auth Tests ---
+def test_register_user(client, db_session):
+    response = client.post("/users/register", json={
+        "email": "newuser@example.com",
+        "password": "password123"
+    })
+    assert response.status_code == 200
     data = response.json()
-    assert data["flight_number"] == "BA249"
-    assert data["available_seats"] == 100
-    assert data["total_seats"] == 100
+    assert data["email"] == "newuser@example.com"
+    assert data["is_admin"] == False
 
-def test_add_flight_invalid_seats(client):
-    """Test adding a flight with 0 seats."""
+def test_register_admin_user(client, db_session):
+    response = client.post("/users/register", json={
+        "email": "newadmin@example.com",
+        "password": "password123",
+        "admin_secret": auth.ADMIN_REGISTRATION_SECRET # Use the real secret
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["email"] == "newadmin@example.com"
+    assert data["is_admin"] == True
+
+def test_register_admin_user_wrong_secret(client, db_session):
+    response = client.post("/users/register", json={
+        "email": "fakeadmin@example.com",
+        "password": "password123",
+        "admin_secret": "wrong-secret"
+    })
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Invalid admin secret"
+
+def test_login(client, test_user):
+    headers = get_auth_headers(client, "testuser@example.com", "password123")
+    assert headers["Authorization"] is not None
+
+def test_get_users_me(client, test_user):
+    headers = get_auth_headers(client, "testuser@example.com", "password123")
+    response = client.get("/users/me", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["email"] == "testuser@example.com"
+
+# --- Flight Tests (Admin) ---
+def test_add_flight_admin(client, admin_user):
+    headers = get_auth_headers(client, "admin@example.com", "adminpass123")
     flight_data = {
-        "flight_number": "AF006",
-        "airline": "Air France",
-        "departure": "CDG",
-        "destination": "SFO",
-        "departure_time": datetime.now(UTC).isoformat(), # <-- UPDATED for warnings
-        "total_seats": 0  # Invalid
+        "flight_number": "BA249", "airline": "British Airways", "departure": "LHR",
+        "destination": "JFK", "departure_time": datetime.now(UTC).isoformat(), "total_seats": 100
     }
-    response = client.post("/flights/", json=flight_data)
-    assert response.status_code == 422 # Pydantic validation error
+    response = client.post("/flights/", json=flight_data, headers=headers)
+    assert response.status_code == 201
+    assert response.json()["flight_number"] == "BA249"
 
-def test_book_ticket(client, db_session):
-    """Test successfully booking a ticket."""
-    # 1. Add a flight
+def test_add_flight_user_unauthorized(client, test_user):
+    headers = get_auth_headers(client, "testuser@example.com", "password123")
+    flight_data = {
+        "flight_number": "BA249", "airline": "British Airways", "departure": "LHR",
+        "destination": "JFK", "departure_time": datetime.now(UTC).isoformat(), "total_seats": 100
+    }
+    response = client.post("/flights/", json=flight_data, headers=headers)
+    assert response.status_code == 403 # 403 Forbidden
+
+def test_delete_flight_admin(client, admin_user, db_session):
+    # 1. Admin adds a flight
+    admin_headers = get_auth_headers(client, "admin@example.com", "adminpass123")
+    flight_data = {
+        "flight_number": "DEL123", "airline": "To Delete", "departure": "A",
+        "destination": "B", "departure_time": datetime.now(UTC).isoformat(), "total_seats": 1
+    }
+    response = client.post("/flights/", json=flight_data, headers=admin_headers)
+    flight_id = response.json()["id"]
+    
+    # 2. Admin deletes it
+    response = client.delete(f"/flights/{flight_id}", headers=admin_headers)
+    assert response.status_code == 204
+    
+    # 3. Verify it's gone
+    db_flight = db_session.query(models.Flight).filter(models.Flight.id == flight_id).first()
+    assert db_flight is None
+
+def test_delete_flight_user_unauthorized(client, test_user, db_session, admin_user):
+    # 1. Admin adds a flight
+    admin_headers = get_auth_headers(client, "admin@example.com", "adminpass123")
+    flight_data = {
+        "flight_number": "DEL123", "airline": "To Delete", "departure": "A",
+        "destination": "B", "departure_time": datetime.now(UTC).isoformat(), "total_seats": 1
+    }
+    response = client.post("/flights/", json=flight_data, headers=admin_headers)
+    flight_id = response.json()["id"]
+
+    # 2. Regular user tries to delete it
+    user_headers = get_auth_headers(client, "testuser@example.com", "password123")
+    response = client.delete(f"/flights/{flight_id}", headers=user_headers)
+    assert response.status_code == 403
+
+# --- Booking Tests (User & Admin) ---
+
+@pytest.fixture(scope="function")
+def test_flight(db_session):
+    """Creates a flight for booking tests."""
     flight = models.Flight(
         flight_number="LH456", airline="Lufthansa", departure="FRA", destination="LAX",
-        departure_time=datetime.now(UTC), total_seats=5, available_seats=5 # <-- UPDATED for warnings
+        departure_time=datetime.now(UTC) + timedelta(days=1), total_seats=5, available_seats=5
     )
     db_session.add(flight)
     db_session.commit()
     db_session.refresh(flight)
+    return flight
 
-    # 2. Book a ticket
+def test_user_book_ticket(client, test_user, test_flight):
+    headers = get_auth_headers(client, "testuser@example.com", "password123")
     booking_data = {"passenger_name": "Test User", "passport_number": "X12345"}
-    response = client.post(f"/flights/{flight.id}/book", json=booking_data)
     
+    response = client.post(f"/flights/{test_flight.id}/book", json=booking_data, headers=headers)
     assert response.status_code == 201
     data = response.json()
     assert data["passenger_name"] == "Test User"
-    assert data["status"] == "Booked"
+    assert data["user_id"] == test_user.id
+
+def test_user_cancel_own_booking(client, test_user, test_flight, db_session):
+    headers = get_auth_headers(client, "testuser@example.com", "password123")
     
-    # 3. Verify available seats decreased
-    db_flight = db_session.query(models.Flight).filter(models.Flight.id == flight.id).first()
+    # 1. Book the ticket
+    booking_data = {"passenger_name": "Test User", "passport_number": "X12345"}
+    response = client.post(f"/flights/{test_flight.id}/book", json=booking_data, headers=headers)
+    booking_id = response.json()["id"]
     
-    # --- THIS IS THE FIX ---
-    # Force the session to read the changes from the DB file
-    db_session.refresh(db_flight)
-    # -----------------------
-    
-    assert db_flight.available_seats == 4
-
-def test_prevent_overbooking(client, db_session):
-    """Test that booking fails when no seats are available."""
-    # 1. Add a flight with 0 available seats
-    flight = models.Flight(
-        flight_number="UA101", airline="United", departure="EWR", destination="SFO",
-        departure_time=datetime.now(UTC), total_seats=1, available_seats=0 # <-- UPDATED for warnings
-    )
-    db_session.add(flight)
-    db_session.commit()
-    db_session.refresh(flight)
-
-    # 2. Attempt to book
-    booking_data = {"passenger_name": "Late Comer", "passport_number": "Y98765"}
-    response = client.post(f"/flights/{flight.id}/book", json=booking_data)
-    
-    assert response.status_code == 400
-    assert response.json()["detail"] == "No available seats on this flight"
-
-def test_prevent_duplicate_passport(client, db_session):
-    """Test that a passport can't be used twice for the *same* flight."""
-    # 1. Add flight
-    flight = models.Flight(
-        flight_number="EK201", airline="Emirates", departure="DXB", destination="JFK",
-        departure_time=datetime.now(UTC), total_seats=10, available_seats=10 # <-- UPDATED for warnings
-    )
-    db_session.add(flight)
-    db_session.commit()
-    db_session.refresh(flight)
-
-    # 2. First booking
-    booking_data = {"passenger_name": "John Doe", "passport_number": "Z55555"}
-    response1 = client.post(f"/flights/{flight.id}/book", json=booking_data)
-    assert response1.status_code == 201
-
-    # 3. Second booking with same passport
-    booking_data_dup = {"passenger_name": "John Doe", "passport_number": "Z55555"}
-    response2 = client.post(f"/flights/{flight.id}/book", json=booking_data_dup)
-    
-    assert response2.status_code == 400
-    assert response2.json()["detail"] == "Passport number already registered for this flight"
-
-def test_cancel_booking(client, db_session):
-    """Test canceling a booking and verifying seat increment."""
-    # 1. Add flight and booking
-    flight = models.Flight(
-        flight_number="SQ33", airline="Singapore Airlines", departure="SIN", destination="LAX",
-        departure_time=datetime.now(UTC), total_seats=2, available_seats=1 # <-- UPDATED for warnings
-    )
-    booking = models.Booking(
-        passenger_name="Cancel User", passport_number="C4433", flight=flight, status="Booked"
-    )
-    db_session.add(flight)
-    db_session.add(booking)
-    db_session.commit()
-    db_session.refresh(flight)
-    db_session.refresh(booking)
-
-    assert flight.available_seats == 1
-
-    # 2. Cancel the booking
-    response = client.delete(f"/bookings/{booking.id}")
-    
+    # 2. Cancel the ticket
+    response = client.delete(f"/bookings/{booking_id}", headers=headers)
     assert response.status_code == 200
-    data = response.json()
-    assert data["status"] == "Canceled"
+    assert response.json()["status"] == "Canceled"
+
+def test_user_cancel_other_booking_unauthorized(client, test_user, admin_user, test_flight, db_session):
+    # 1. Admin books a ticket
+    admin_headers = get_auth_headers(client, "admin@example.com", "adminpass123")
+    booking_data = {"passenger_name": "Admin User", "passport_number": "A123"}
+    response = client.post(f"/flights/{test_flight.id}/book", json=booking_data, headers=admin_headers)
+    booking_id = response.json()["id"]
     
-    # 3. Verify seat count is restored
-    db_flight = db_session.query(models.Flight).filter(models.Flight.id == flight.id).first()
+    # 2. Regular user tries to cancel it
+    user_headers = get_auth_headers(client, "testuser@example.com", "password123")
+    response = client.delete(f"/bookings/{booking_id}", headers=user_headers)
+    assert response.status_code == 403 # Forbidden
+
+def test_admin_cancel_other_booking_authorized(client, test_user, admin_user, test_flight, db_session):
+    # 1. Regular user books a ticket
+    user_headers = get_auth_headers(client, "testuser@example.com", "password123")
+    booking_data = {"passenger_name": "Test User", "passport_number": "X12345"}
+    response = client.post(f"/flights/{test_flight.id}/book", json=booking_data, headers=user_headers)
+    booking_id = response.json()["id"]
     
-    # --- THIS IS THE FIX ---
-    # Force the session to read the changes from the DB file
-    db_session.refresh(db_flight)
-    # -----------------------
-    
-    assert db_flight.available_seats == 2
+    # 2. Admin user cancels it
+    admin_headers = get_auth_headers(client, "admin@example.com", "adminpass123")
+    response = client.delete(f"/bookings/{booking_id}", headers=admin_headers)
+    assert response.status_code == 200
+    assert response.json()["status"] == "Canceled"

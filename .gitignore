@@ -1,0 +1,59 @@
+# ----------------------------------------------------------------
+# Python / FastAPI Backend
+# ----------------------------------------------------------------
+
+# Virtual Environments
+venv/
+*.venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# SQLite Databases
+*.db
+*.db-journal
+test.db
+flights.db
+
+# Pytest cache
+.pytest_cache/
+.coverage
+
+# ----------------------------------------------------------------
+# React Frontend
+# ----------------------------------------------------------------
+
+# Node dependencies
+node_modules/
+
+# Build folder
+build/
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ----------------------------------------------------------------
+# Generated SDK
+# ----------------------------------------------------------------
+
+# Ignore the entire generated SDK directory
+flight_sdk/
+
+# ----------------------------------------------------------------
+# OS / IDE Files
+# ----------------------------------------------------------------
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

@@ -33,6 +33,13 @@ class TestFlightsApi(unittest.TestCase):
         """
         pass
 
+    def test_delete_flight_flights_flight_id_delete(self) -> None:
+        """Test case for delete_flight_flights_flight_id_delete
+
+        Delete Flight
+        """
+        pass
+
     def test_get_flight_details_flights_flight_id_get(self) -> None:
         """Test case for get_flight_details_flights_flight_id_get
 

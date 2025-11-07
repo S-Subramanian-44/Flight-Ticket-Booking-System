@@ -11,6 +11,10 @@ docs/FlightCreate.md
 docs/FlightResponse.md
 docs/FlightsApi.md
 docs/HTTPValidationError.md
+docs/Token.md
+docs/UserCreate.md
+docs/UserResponse.md
+docs/UsersApi.md
 docs/ValidationError.md
 docs/ValidationErrorLocInner.md
 git_push.sh
@@ -18,6 +22,7 @@ openapi_client/__init__.py
 openapi_client/api/__init__.py
 openapi_client/api/bookings_api.py
 openapi_client/api/flights_api.py
+openapi_client/api/users_api.py
 openapi_client/api_client.py
 openapi_client/api_response.py
 openapi_client/configuration.py
@@ -28,6 +33,9 @@ openapi_client/models/booking_response.py
 openapi_client/models/flight_create.py
 openapi_client/models/flight_response.py
 openapi_client/models/http_validation_error.py
+openapi_client/models/token.py
+openapi_client/models/user_create.py
+openapi_client/models/user_response.py
 openapi_client/models/validation_error.py
 openapi_client/models/validation_error_loc_inner.py
 openapi_client/py.typed
@@ -45,6 +53,10 @@ test/test_flight_create.py
 test/test_flight_response.py
 test/test_flights_api.py
 test/test_http_validation_error.py
+test/test_token.py
+test/test_user_create.py
+test/test_user_response.py
+test/test_users_api.py
 test/test_validation_error.py
 test/test_validation_error_loc_inner.py
 tox.ini

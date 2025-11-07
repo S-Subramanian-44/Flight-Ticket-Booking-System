@@ -40,6 +40,7 @@ class TestBookingResponse(unittest.TestCase):
                 id = 56,
                 flight_id = 56,
                 status = '',
+                user_id = 56,
                 flight = openapi_client.models.flight_response.FlightResponse(
                     flight_number = '', 
                     airline = '', 
@@ -57,6 +58,7 @@ class TestBookingResponse(unittest.TestCase):
                 id = 56,
                 flight_id = 56,
                 status = '',
+                user_id = 56,
                 flight = openapi_client.models.flight_response.FlightResponse(
                     flight_number = '', 
                     airline = '', 

@@ -20,6 +20,7 @@ __version__ = "1.0.0"
 __all__ = [
     "BookingsApi",
     "FlightsApi",
+    "UsersApi",
     "ApiResponse",
     "ApiClient",
     "Configuration",
@@ -34,6 +35,9 @@ __all__ = [
     "FlightCreate",
     "FlightResponse",
     "HTTPValidationError",
+    "Token",
+    "UserCreate",
+    "UserResponse",
     "ValidationError",
     "ValidationErrorLocInner",
 ]
@@ -41,6 +45,7 @@ __all__ = [
 # import apis into sdk package
 from openapi_client.api.bookings_api import BookingsApi as BookingsApi
 from openapi_client.api.flights_api import FlightsApi as FlightsApi
+from openapi_client.api.users_api import UsersApi as UsersApi
 
 # import ApiClient
 from openapi_client.api_response import ApiResponse as ApiResponse
@@ -59,6 +64,9 @@ from openapi_client.models.booking_response import BookingResponse as BookingRes
 from openapi_client.models.flight_create import FlightCreate as FlightCreate
 from openapi_client.models.flight_response import FlightResponse as FlightResponse
 from openapi_client.models.http_validation_error import HTTPValidationError as HTTPValidationError
+from openapi_client.models.token import Token as Token
+from openapi_client.models.user_create import UserCreate as UserCreate
+from openapi_client.models.user_response import UserResponse as UserResponse
 from openapi_client.models.validation_error import ValidationError as ValidationError
 from openapi_client.models.validation_error_loc_inner import ValidationErrorLocInner as ValidationErrorLocInner
 
