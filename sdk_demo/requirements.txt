@@ -1,0 +1,6 @@
+# Path to the generated SDK (install it locally)
+-e ../flight_sdk
+
+# Other dependencies required by the generated SDK
+urllib3 >= 1.25.3
+python-dateutil

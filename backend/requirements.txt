@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+pydantic
+pytest
+httpx
+passlib[bcrypt]  # <-- Add for password hashing
+python-jose             # <-- Add for JWT
