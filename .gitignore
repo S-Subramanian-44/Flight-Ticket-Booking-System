@@ -33,6 +33,9 @@ node_modules/
 # Build folder
 build/
 
+# env files
+.env
+
 # Log files
 npm-debug.log*
 yarn-debug.log*

@@ -1,0 +1,26 @@
+.layout-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-container {
+    flex-grow: 1;
+    padding: 24px;
+    background-color: #f4f7f6;
+}
+
+/* This is the new container for all page content */
+.page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+}
+
+.page-container h1, .page-container h2 {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}

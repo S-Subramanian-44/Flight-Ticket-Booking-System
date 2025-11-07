@@ -6,3 +6,4 @@ pytest
 httpx
 passlib[bcrypt]  # <-- Add for password hashing
 python-jose             # <-- Add for JWT
+fastapi-mail
