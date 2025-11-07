@@ -15,8 +15,6 @@ Method | HTTP request | Description
 
 Add Flight
 
-Add a new flight to the system. **Admin only.**
-
 ### Example
 
 * OAuth Authentication (OAuth2PasswordBearer):
@@ -91,10 +89,6 @@ Name | Type | Description  | Notes
 > delete_flight_flights_flight_id_delete(flight_id)
 
 Delete Flight
-
-Delete a flight from the system. **Admin only.**
-This will also automatically delete all existing bookings for this flight
-due to the cascade rule.
 
 ### Example
 

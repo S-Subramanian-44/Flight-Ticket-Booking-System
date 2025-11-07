@@ -1,20 +1,23 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Boolean # <-- Add Boolean
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
-# ... (Flight model is unchanged) ...
 class Flight(Base):
     __tablename__ = "flights"
+
     id = Column(Integer, primary_key=True, index=True)
     flight_number = Column(String, unique=True, index=True, nullable=False)
     airline = Column(String, nullable=False)
     departure = Column(String, nullable=False)
     destination = Column(String, nullable=False)
     departure_time = Column(DateTime, nullable=False)
+    arrival_time = Column(DateTime, nullable=False)  # <-- NEW
     total_seats = Column(Integer, nullable=False)
     available_seats = Column(Integer, nullable=False)
+
     bookings = relationship("Booking", back_populates="flight", cascade="all, delete-orphan")
-# ... (Booking model is unchanged) ...
+
+
 class Booking(Base):
     __tablename__ = "bookings"
     id = Column(Integer, primary_key=True, index=True)

@@ -10,6 +10,7 @@ Name | Type | Description | Notes
 **departure** | **str** |  | 
 **destination** | **str** |  | 
 **departure_time** | **datetime** |  | 
+**arrival_time** | **datetime** |  | 
 **total_seats** | **int** |  | 
 **id** | **int** |  | 
 **available_seats** | **int** |  | 

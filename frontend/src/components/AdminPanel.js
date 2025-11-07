@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import '../App.css'; // Re-use main styles for forms
 
-// This component will be shown on the main dashboard if the user is an admin
-function AdminPanel({ onActionSuccess, onError }) {
+// This component now conditionally renders based on the 'mode' prop
+function AdminPanel({ mode, onActionSuccess, onError }) {
     const { token } = useAuth();
     
     // States for Add Flight form
@@ -12,6 +13,7 @@ function AdminPanel({ onActionSuccess, onError }) {
     const [departure, setDeparture] = useState('');
     const [destination, setDestination] = useState('');
     const [departureTime, setDepartureTime] = useState('');
+    const [arrivalTime, setArrivalTime] = useState(''); // <-- NEW
     const [totalSeats, setTotalSeats] = useState(100);
 
     // State for Delete Flight form
@@ -27,6 +29,7 @@ function AdminPanel({ onActionSuccess, onError }) {
                 departure,
                 destination,
                 departure_time: new Date(departureTime).toISOString(),
+                arrival_time: new Date(arrivalTime).toISOString(), // <-- NEW
                 total_seats: parseInt(totalSeats, 10)
             };
             await axios.post('/flights/', payload, {
@@ -39,23 +42,28 @@ function AdminPanel({ onActionSuccess, onError }) {
             setDeparture('');
             setDestination('');
             setDepartureTime('');
+            setArrivalTime(''); // <-- NEW
             setTotalSeats(100);
         } catch (err) {
             console.error('Add flight error:', err.response);
-            const errorMsg = err.response?.data?.detail[0]?.msg || 'Failed to add flight.';
+            let errorMsg = 'Failed to add flight.';
+            if (err.response?.data?.detail) {
+                const detail = err.response.data.detail;
+                errorMsg = Array.isArray(detail) ? detail[0].msg : detail;
+            }
             onError(errorMsg);
         }
     };
 
     // --- Handle Delete Flight ---
     const handleDeleteFlight = async (e) => {
+        // ... (this function is unchanged)
         e.preventDefault();
         if (!deleteFlightId) {
             onError('Flight ID is required to delete.');
             return;
         }
         try {
-            // Confirm before deleting
             if (!window.confirm(`Are you sure you want to delete flight ${deleteFlightId}? This will cancel all its bookings.`)) {
                 return;
             }
@@ -74,26 +82,44 @@ function AdminPanel({ onActionSuccess, onError }) {
 
     return (
         <div className="admin-panel">
-            <h2>Admin Controls</h2>
-            
-            {/* --- Add Flight Form --- */}
-            <form onSubmit={handleAddFlight} className="admin-form">
-                <h3>Add a New Flight</h3>
-                <input type="text" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} placeholder="Flight Number" required />
-                <input type="text" value={airline} onChange={(e) => setAirline(e.target.value)} placeholder="Airline" required />
-                <input type="text" value={departure} onChange={(e) => setDeparture(e.target.value)} placeholder="Departure (e.g., LHR)" required />
-                <input type="text" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Destination (e.g., JFK)" required />
-                <input type="datetime-local" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} required />
-                <input type="number" value={totalSeats} onChange={(e) => setTotalSeats(e.target.value)} placeholder="Total Seats" required />
-                <button type="submit">Add Flight</button>
-            </form>
+            {/* --- Conditionally render Add Flight Form --- */}
+            {mode === 'add' && (
+                <form onSubmit={handleAddFlight} className="admin-form">
+                    <h2>Add a New Flight</h2>
+                    {/* Use explicit layout classes to avoid fragile nth-of-type selectors */}
+                    <label>Flight Number:</label>
+                    <input className="full" type="text" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} placeholder="Flight Number" required />
+                    
+                    <label>Flight Name:</label>
+                    <input className="full" type="text" value={airline} onChange={(e) => setAirline(e.target.value)} placeholder="Airline" required />
+                    
+                    <label>Departure:</label>
+                    <input className="full" type="text" value={departure} onChange={(e) => setDeparture(e.target.value)} placeholder="Departure (e.g., LHR)" required />
+                    
+                    <label>Destination:</label>
+                    <input className="full" type="text" value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="Destination (e.g., JFK)" required />
+                    
+                    <label>Departure Time:</label>
+                    <input className="full" type="datetime-local" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} required />
+                    
+                    <label>Arrival Time:</label>
+                    <input className="full" type="datetime-local" value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} required />
+                    
+                    <label>Total Seats:</label>
+                    <input className="full" type="number" value={totalSeats} onChange={(e) => setTotalSeats(e.target.value)} placeholder="Total Seats" required />
+                    
+                    <button type="submit" className="btn btn-primary">Add Flight</button>
+                </form>
+            )}
 
-            {/* --- Delete Flight Form --- */}
-            <form onSubmit={handleDeleteFlight} className="admin-form">
-                <h3>Delete a Flight</h3>
-                <input type="text" value={deleteFlightId} onChange={(e) => setDeleteFlightId(e.target.value)} placeholder="Flight ID to Delete" required />
-                <button type="submit" className="delete-btn">Delete Flight</button>
-            </form>
+            {/* --- Conditionally render Delete Flight Form --- */}
+            {mode === 'delete' && (
+                <form onSubmit={handleDeleteFlight} className="admin-form">
+                    <h2>Delete a Flight</h2>
+                    <input type="text" value={deleteFlightId} onChange={(e) => setDeleteFlightId(e.target.value)} placeholder="Flight ID to Delete" required />
+                    <button type="submit" className="btn btn-danger">Delete Flight</button>
+                </form>
+            )}
         </div>
     );
 }

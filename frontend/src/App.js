@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthPage from './pages/AuthPage';
-import FlightList from './components/FlightList';
-import BookFlight from './components/BookFlight';
-import CancelBooking from './components/CancelBooking';
-import MyBookings from './components/MyBookings';
-import AdminPanel from './components/AdminPanel'; // <-- Import new component
+import Layout from './components/Layout';
+import DashboardHome from './pages/DashboardHome'; // <-- Will be modified
+import BookTicketPage from './pages/BookTicketPage'; // <-- NEW
+import MyBookingsPage from './pages/MyBookingsPage';
+import AdminAddFlightPage from './pages/AdminAddFlightPage';
+import AdminManageFlightsPage from './pages/AdminManageFlightsPage';
 import './App.css';
 
 const PrivateRoute = ({ children }) => {
@@ -14,85 +15,54 @@ const PrivateRoute = ({ children }) => {
     return token ? children : <Navigate to="/login" />;
 };
 
-function Dashboard() {
-    const [alert, setAlert] = useState(null);
-    const [refreshKey, setRefreshKey] = useState(0);
-    const { logout, isAdmin } = useAuth(); // <-- Get isAdmin status
-
-    const handleAlert = (type, message) => {
-        setAlert({ type, message });
-        setTimeout(() => setAlert(null), 5000);
-    };
-
-    const handleSuccess = (message) => {
-        setRefreshKey(oldKey => oldKey + 1);
-        handleAlert('success', message || 'Action successful!');
-    };
-
-    return (
-        <div className="container">
-            <button className="logout-btn" onClick={logout}>Logout</button>
-            <h1>🚀 Flight Ticket Booking System</h1>
-            
-            {alert && (
-                <div className={`alert alert-${alert.type}`}>
-                    {alert.message}
-                </div>
-            )}
-
-            {/* --- NEW: Show AdminPanel if user is admin --- */}
-            {isAdmin && (
-                <AdminPanel 
-                    onActionSuccess={handleSuccess}
-                    onError={(msg) => handleAlert('error', msg)}
-                />
-            )}
-
-            <div className="component-section">
-                <h2>✈️ Available Flights</h2>
-                <FlightList key={`flights-${refreshKey}`} />
-            </div>
-            
-            <div className="component-section">
-                <h2>My Bookings</h2>
-                <MyBookings key={`bookings-${refreshKey}`} />
-            </div>
-
-            <div className="component-section">
-                <h2>🎟️ Book a Ticket</h2>
-                <BookFlight 
-                    onBookingSuccess={() => handleSuccess('Booking successful!')}
-                    onError={(msg) => handleAlert('error', msg)} 
-                />
-            </div>
-
-            <div className="component-section">
-                <h2>❌ Cancel a Booking</h2>
-                <CancelBooking 
-                    onCancelSuccess={() => handleSuccess('Cancellation successful!')}
-                    onError={(msg) => handleAlert('error', msg)}
-                />
-            </div>
-        </div>
-    );
-}
+const AdminRoute = ({ children }) => {
+    const { token, isAdmin } = useAuth();
+    if (!token) {
+        return <Navigate to="/login" />;
+    }
+    return isAdmin ? children : <Navigate to="/" />;
+};
 
 function App() {
     return (
-        <AuthProvider>
-            <Routes>
-                <Route path="/login" element={<AuthPage />} />
-                <Route 
-                    path="/" 
-                    element={
-                        <PrivateRoute>
-                            <Dashboard />
-                        </PrivateRoute>
-                    } 
-                />
-            </Routes>
-        </AuthProvider>
+        // AuthProvider is already here from previous step
+        <Routes>
+            <Route path="/login" element={<AuthPage />} />
+
+            <Route 
+                path="/" 
+                element={<PrivateRoute><Layout /></PrivateRoute>}
+            >
+                <Route index element={<DashboardHome />} />
+                
+                {/* --- NEW/MODIFIED BOOKING ROUTES --- */}
+                {/* /book will be for manual entry */}
+                <Route path="book" element={<BookTicketPage />} /> 
+                {/* /book/:flightId will be for pre-filled entry */}
+                <Route path="book/:flightId" element={<BookTicketPage />} /> 
+
+                <Route path="bookings" element={<MyBookingsPage />} />
+
+                {/* --- Admin Routes (Unchanged) --- */}
+                <Route path="admin/add-flight" element={
+                    <AdminRoute><AdminAddFlightPage /></AdminRoute>
+                } />
+                <Route path="admin/manage-flights" element={
+                    <AdminRoute><AdminManageFlightsPage /></AdminRoute>
+                } />
+            </Route>
+            
+            <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
     );
 }
+
+// We remove the old Dashboard component from App.js, as its
+// contents are now in the new page components.
+
+// Make sure AuthProvider is now wrapping <Routes>
+// In your case, it's wrapping App in index.js, which is perfect.
+
+
 
 export default App;

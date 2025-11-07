@@ -58,7 +58,6 @@ class FlightsApi:
     ) -> FlightResponse:
         """Add Flight
 
-        Add a new flight to the system. **Admin only.**
 
         :param flight_create: (required)
         :type flight_create: FlightCreate
@@ -126,7 +125,6 @@ class FlightsApi:
     ) -> ApiResponse[FlightResponse]:
         """Add Flight
 
-        Add a new flight to the system. **Admin only.**
 
         :param flight_create: (required)
         :type flight_create: FlightCreate
@@ -194,7 +192,6 @@ class FlightsApi:
     ) -> RESTResponseType:
         """Add Flight
 
-        Add a new flight to the system. **Admin only.**
 
         :param flight_create: (required)
         :type flight_create: FlightCreate
@@ -335,7 +332,6 @@ class FlightsApi:
     ) -> None:
         """Delete Flight
 
-        Delete a flight from the system. **Admin only.** This will also automatically delete all existing bookings for this flight due to the cascade rule.
 
         :param flight_id: (required)
         :type flight_id: int
@@ -403,7 +399,6 @@ class FlightsApi:
     ) -> ApiResponse[None]:
         """Delete Flight
 
-        Delete a flight from the system. **Admin only.** This will also automatically delete all existing bookings for this flight due to the cascade rule.
 
         :param flight_id: (required)
         :type flight_id: int
@@ -471,7 +466,6 @@ class FlightsApi:
     ) -> RESTResponseType:
         """Delete Flight
 
-        Delete a flight from the system. **Admin only.** This will also automatically delete all existing bookings for this flight due to the cascade rule.
 
         :param flight_id: (required)
         :type flight_id: int

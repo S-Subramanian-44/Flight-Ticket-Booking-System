@@ -40,6 +40,7 @@ class TestFlightResponse(unittest.TestCase):
                 departure = '',
                 destination = '',
                 departure_time = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                arrival_time = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 total_seats = 56,
                 id = 56,
                 available_seats = 56
@@ -51,6 +52,7 @@ class TestFlightResponse(unittest.TestCase):
                 departure = '',
                 destination = '',
                 departure_time = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                arrival_time = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 total_seats = 56,
                 id = 56,
                 available_seats = 56,
