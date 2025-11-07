@@ -15,7 +15,7 @@ import time
 BASE_URL = "http://localhost:8000"
 ADMIN_EMAIL = f"admin_sdk_{int(time.time())}@example.com"
 ADMIN_PASSWORD = "sdk_admin_password_123"
-ADMIN_SECRET = "super-secret-admin-key" # Must match your auth.py
+ADMIN_SECRET = "caliber@1" # Must match your auth.py
 
 # 1. Configure the base API client
 configuration = openapi_client.Configuration(

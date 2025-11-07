@@ -15,7 +15,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # --- NEW ---
 # Change this to a complex, random string in a real environment
-ADMIN_REGISTRATION_SECRET = "super-secret-admin-key" 
+ADMIN_REGISTRATION_SECRET = "caliber@1" 
 
 # ... (Password hashing functions are unchanged) ...
 def verify_password(plain_password, hashed_password):
