@@ -2,17 +2,31 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import './AuthPage.css';
+import './AuthPage.css'; // Make sure this is imported
 
 const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [adminSecret, setAdminSecret] = useState(''); // <-- New state for admin secret
+    const [adminSecret, setAdminSecret] = useState('');
     const [error, setError] = useState('');
     
+    // --- NEW: State for password visibility ---
+    const [showPassword, setShowPassword] = useState(false);
+
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    // --- NEW: Function to clear fields on toggle ---
+    const handleToggleForm = () => {
+        setIsLogin(!isLogin);
+        // Clear all fields and errors
+        setEmail('');
+        setPassword('');
+        setAdminSecret('');
+        setError('');
+        setShowPassword(false);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -28,30 +42,25 @@ const AuthPage = () => {
                 const response = await axios.post('/users/login', params, {
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 });
-                // --- Save token AND admin status ---
                 login(response.data.access_token, response.data.is_admin);
                 navigate('/');
             } catch (err) {
-                // ... (error handling) ...
                 const errorMsg = err.response?.data?.detail || 'Login failed. Please check credentials.';
                 setError(errorMsg);
             }
         } else {
             // --- Handle Register ---
             try {
-                // --- Send admin_secret if it exists ---
                 const payload = { email, password };
                 if (adminSecret) {
                     payload.admin_secret = adminSecret;
                 }
-
                 await axios.post('/users/register', payload);
-                setIsLogin(true);
+                // On success, flip to login and show success message
+                handleToggleForm();
                 setError('Registration successful! Please log in.');
-                // Clear secret field after use
-                setAdminSecret('');
             } catch (err) {
-                // ... (updated error handling) ...
+                // --- Updated error handling ---
                 console.error('Registration error:', err.response);
                 let errorMsg = 'Registration failed.';
                 if (err.response?.data?.detail) {
@@ -67,7 +76,8 @@ const AuthPage = () => {
         <div className="auth-container">
             <div className="auth-form">
                 <h2>{isLogin ? 'Login' : 'Register'}</h2>
-                {error && <p className="auth-error">{error}</p>}
+                {error && <p className={error.includes('successful') ? 'auth-success' : 'auth-error'}>{error}</p>}
+                
                 <form onSubmit={handleSubmit}>
                     <input
                         type="email"
@@ -76,14 +86,25 @@ const AuthPage = () => {
                         placeholder="Email"
                         required
                     />
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Password"
-                        required
-                    />
-                    {/* --- NEW: Show admin secret field only on register --- */}
+                    
+                    {/* --- NEW: Password wrapper for icon --- */}
+                    <div className="password-wrapper">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Password"
+                            required
+                        />
+                        <span 
+                            className="password-toggle-icon" 
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {/* --- THIS IS THE CHANGE --- */}
+                            {showPassword ? '🙈' : '👁️'}
+                        </span>
+                    </div>
+                    
                     {!isLogin && (
                         <input
                             type="password"
@@ -94,7 +115,9 @@ const AuthPage = () => {
                     )}
                     <button type="submit">{isLogin ? 'Login' : 'Register'}</button>
                 </form>
-                <button className="toggle-btn" onClick={() => setIsLogin(!isLogin)}>
+                
+                {/* --- UPDATED: Use the new toggle function --- */}
+                <button className="toggle-btn" onClick={handleToggleForm}>
                     {isLogin ? 'Need an account? Register' : 'Have an account? Login'}
                 </button>
             </div>
