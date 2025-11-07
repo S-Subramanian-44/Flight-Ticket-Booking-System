@@ -29,7 +29,7 @@ function BookTicketPage() {
                 <h2>🎟️ Book a Ticket</h2>
                 <p>
                     {flightId 
-                        ? "Your selected flight ID is pre-filled below." 
+                        ? "" 
                         : "Enter a Flight ID manually. You can find one from the list below."
                     }
                 </p>

@@ -36,12 +36,12 @@ class TestBookingCreate(unittest.TestCase):
         if include_optional:
             return BookingCreate(
                 passenger_name = '',
-                passport_number = ''
+                passport_number = 'EiO2888001'
             )
         else:
             return BookingCreate(
                 passenger_name = '',
-                passport_number = '',
+                passport_number = 'EiO2888001',
         )
         """
 

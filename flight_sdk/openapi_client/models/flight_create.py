@@ -32,8 +32,9 @@ class FlightCreate(BaseModel):
     departure: StrictStr
     destination: StrictStr
     departure_time: datetime
+    arrival_time: datetime
     total_seats: StrictInt
-    __properties: ClassVar[List[str]] = ["flight_number", "airline", "departure", "destination", "departure_time", "total_seats"]
+    __properties: ClassVar[List[str]] = ["flight_number", "airline", "departure", "destination", "departure_time", "arrival_time", "total_seats"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -91,6 +92,7 @@ class FlightCreate(BaseModel):
             "departure": obj.get("departure"),
             "destination": obj.get("destination"),
             "departure_time": obj.get("departure_time"),
+            "arrival_time": obj.get("arrival_time"),
             "total_seats": obj.get("total_seats")
         })
         return _obj

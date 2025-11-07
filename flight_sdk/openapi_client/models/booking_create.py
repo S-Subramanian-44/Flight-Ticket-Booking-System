@@ -17,8 +17,9 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, field_validator
 from typing import Any, ClassVar, Dict, List
+from typing_extensions import Annotated
 from typing import Optional, Set
 from typing_extensions import Self
 
@@ -27,8 +28,15 @@ class BookingCreate(BaseModel):
     BookingCreate
     """ # noqa: E501
     passenger_name: StrictStr
-    passport_number: StrictStr
+    passport_number: Annotated[str, Field(strict=True)]
     __properties: ClassVar[List[str]] = ["passenger_name", "passport_number"]
+
+    @field_validator('passport_number')
+    def passport_number_validate_regular_expression(cls, value):
+        """Validates the regular expression"""
+        if not re.match(r"^[A-Za-z]{1,3}[0-9]{6,9}$", value):
+            raise ValueError(r"must validate the regular expression /^[A-Za-z]{1,3}[0-9]{6,9}$/")
+        return value
 
     model_config = ConfigDict(
         populate_by_name=True,
